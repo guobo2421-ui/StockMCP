@@ -1,40 +1,50 @@
 # StockMCP
 
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Python](https://img.shields.io/badge/python-3.11-blue)
+![License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![MCP](https://img.shields.io/badge/MCP-server-green)
 
 StockMCP is an MCP (Model Context Protocol) server that allows AI assistants such as Claude Desktop and Cursor to retrieve real-time US stock market information through structured tools.
 
-StockMCP provides stock prices, company information, valuation metrics, financial statements, and news through MCP tools that can be used by Claude Desktop, Cursor, and other MCP-compatible AI clients.
+StockMCP provides stock prices, historical data, company information, market data, and financial news through MCP tools that can be used by Claude Desktop, Cursor, and other MCP-compatible AI clients.
 
 ```
 Claude Desktop
         │
         │ MCP
         ▼
-+------------------+
-|   StockMCP       |
-|------------------|
-| stock_price()    |
-| company_info()   |
-| financials()     |
-+------------------+
++----------------------+
+|      StockMCP        |
+|----------------------|
+| stock_price()        |
+| stock_history()      |
+| stock_news()         |
+| company_info()         |
+| market_status()      |
++----------------------+
         │
         ▼
-    Yahoo Finance
+ Yahoo Finance
 ```
 
 ## Features
-- Real-time stock price
+- Real-time stock prices
+- Historical OHLCV data
 - Company information
 - Market capitalization
-- P/E Ratio
-- P/S Ratio
-- Financial statements
-- Option Chain
-- Stock news
+- Valuation metrics
+- Financial news
+- Market overview
 - AI-ready MCP tools
+
+## Available Tools
+| Tool | Description |
+|------|-------------|
+| `stock_price()` | Latest stock price |
+| `stock_history()` | Historical OHLCV data |
+| `stock_info()` | Company information |
+| `stock_news()` | Latest financial news |
+| `market_status()` | Market index information |
 
 ## Supported AI Clients
 
@@ -122,11 +132,26 @@ Same configuration as Claude Desktop.
 - `news()`
 
 ## Roadmap
-- [ ] v0.1 — Stock price
-- [ ] v0.2 — Company Information
-- [ ] v0.3 — Financial Statements
-- [ ] v0.4 — Options
-- [ ] v1.0 — AI Stock Analysis
+v0.1
+- stock server
+
+v0.2
+- refactored architecture
+- company
+- market
+- news
+
+- [x] Stock price
+- [x] Historical data
+- [x] Company information
+- [x] Market data
+- [x] Stock news
+
+Upcoming:
+- [ ] Financial statements
+- [ ] Options chain
+- [ ] Technical indicators
+- [ ] AI stock analysis
 
 ## Topics
 `mcp` `claude` `cursor` `stock` `finance` `ai` `python` `yfinance`

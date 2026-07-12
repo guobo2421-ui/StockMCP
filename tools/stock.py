@@ -4,7 +4,6 @@ from mcp_instance import mcp
 from services.yahoo import (
     get_stock_price,
     get_stock_history,
-    get_stock_info,
 )
 
 
@@ -28,12 +27,3 @@ def stock_history(
     """Return historical OHLCV data."""
 
     return get_stock_history(symbol, period)
-
-
-@mcp.tool()
-def stock_info(
-    symbol: Annotated[str, "Stock ticker symbol (e.g. AAPL, MSFT, GOOGL)"],
-) -> dict[str, Any]:
-    """Return company information."""
-
-    return get_stock_info(symbol)

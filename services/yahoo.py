@@ -9,7 +9,7 @@ import math
 from typing import Any
 
 import yfinance as yf
-
+from datetime import datetime
 
 def get_stock_price(symbol: str) -> dict[str, Any]:
     """Return the latest stock price."""
@@ -59,7 +59,7 @@ def get_stock_history(
     return records
 
 
-def get_stock_info(symbol: str) -> dict[str, Any]:
+def get_company_info(symbol: str) -> dict[str, Any]:
     """Return company information."""
 
     ticker = yf.Ticker(symbol)
@@ -102,3 +102,36 @@ def get_stock_info(symbol: str) -> dict[str, Any]:
         cleaned[key] = value
 
     return cleaned
+
+def get_stock_news(symbol: str) -> dict[str, Any]:
+    """Return the latest news articles for the given stock symbol."""
+
+    ticker = yf.Ticker(symbol)
+    news = ticker.news[:10]
+
+    if not news:
+        raise ValueError(f"No news found for symbol: {symbol}")
+
+    articles = []
+
+    for item in news:
+        content = item.get("content", {})
+
+        if not content.get("title"):
+            continue
+
+        articles.append(
+            {
+                "title": content.get("title"),
+                "summary": content.get("summary"),
+                "publisher": content.get("provider", {}).get("displayName"),
+                "published": content.get("pubDate"),
+                "url": content.get("canonicalUrl", {}).get("url"),
+            }
+        )
+
+    return {
+        "symbol": symbol.upper(),
+        "count": len(articles),
+        "news": articles,
+    }

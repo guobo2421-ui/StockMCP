@@ -9,7 +9,9 @@ from mcp_instance import mcp
 
 # Register tools
 import tools.stock
-
+import tools.company
+import tools.market
+import tools.news
 
 if __name__ == "__main__":
     mcp.run()
