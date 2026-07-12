@@ -106,10 +106,7 @@ python server.py
 Restart Claude Desktop.
 
 ### Test
-Ask Claude:
-> What is the current price of TSLA?
-
-If the setup is successful, Claude will call StockMCP to retrieve stock data.
+![StockMCP Demo](images/StockMCP_Claude.png)
 
 ### Cursor Configuration
 Same configuration as Claude Desktop.
