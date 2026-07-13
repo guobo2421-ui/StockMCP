@@ -19,8 +19,9 @@ Claude Desktop
 | stock_price()        |
 | stock_history()      |
 | stock_news()         |
-| company_info()         |
+| company_info()       |
 | market_status()      |
+| income_statement()   |
 +----------------------+
         │
         ▼
@@ -45,6 +46,7 @@ Claude Desktop
 | `stock_info()` | Company information |
 | `stock_news()` | Latest financial news |
 | `market_status()` | Market index information |
+| `income_statenemt` | Financial statement |
 
 ## Supported AI Clients
 
@@ -101,16 +103,26 @@ python server.py
 ```
 
 ### Claude Desktop Configuration
+Add below configuration in claude_desktop_config.json
 ```json
 {
   "mcpServers": {
-    "stock": {
-      "command": "python",
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\MCP_Claude"
+      ]
+    },
+    "StockMCP": {
+      "command": "C:\\Python314\\python.exe",
       "args": [
         "C:\\MCP_Claude\\StockMCP\\server.py"
       ]
     }
   }
+  ...
 }
 ```
 Restart Claude Desktop.
@@ -119,17 +131,27 @@ Restart Claude Desktop.
 ![StockMCP Demo](images/StockMCP_Claude.png)
 
 ### Cursor Configuration
-Same configuration as Claude Desktop.
-
-## Available Tools
-- `stock_price()`
-- `company_info()`
-- `market_cap()`
-- `pe_ratio()`
-- `ps_ratio()`
-- `financials()`
-- `option_chain()`
-- `news()`
+Add below configuration in mcp.json
+```json
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\MCP_Claude"
+      ]
+    }    
+  },
+  "StockMCP": {
+    "command": "python",
+    "args": [
+      "C:\\MCP_Claude\\StockMCP\\server.py"
+    ]
+  }
+}
+```
 
 ## Roadmap
 v0.1
@@ -146,9 +168,9 @@ v0.2
 - [x] Company information
 - [x] Market data
 - [x] Stock news
+- [x] Financial statements
 
 Upcoming:
-- [ ] Financial statements
 - [ ] Options chain
 - [ ] Technical indicators
 - [ ] AI stock analysis
