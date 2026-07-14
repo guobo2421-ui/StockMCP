@@ -43,10 +43,14 @@ Claude Desktop
 |------|-------------|
 | `stock_price()` | Latest stock price |
 | `stock_history()` | Historical OHLCV data |
-| `stock_info()` | Company information |
+| `company_info()` | Company information |
 | `stock_news()` | Latest financial news |
 | `market_status()` | Market index information |
-| `income_statenemt` | Financial statement |
+| `income_statenemt()` | Financial statement |
+| `balance_sheet()` | Company balance sheet |
+| `cash_flow()` | Company cash flow |
+| `financial_ratios()` | Financial ratios |
+| `valuation_ratios()` | Valuation ratios |
 
 ## Supported AI Clients
 

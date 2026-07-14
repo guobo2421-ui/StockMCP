@@ -28,4 +28,10 @@ def clean_value(value: Any) -> Any:
         return None
 
     return value  
+
+def safe_divide(a, b):
+    if a is None or b is None or b == 0:
+        return None
+
+    return a / b
  
