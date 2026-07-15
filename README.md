@@ -51,6 +51,11 @@ Claude Desktop
 | `cash_flow()` | Company cash flow |
 | `financial_ratios()` | Financial ratios |
 | `valuation_ratios()` | Valuation ratios |
+| `profitability_analysis()` | Profitability analysis |
+| `liquidity_analysis()` | Liquidity analysis |
+| `leverage_analysis()` | Leverage analysis |
+| `valuation_analysis()` | Valuation analysis |
+| `financial_health_analysis()` | Financial health analysis |
 
 ## Supported AI Clients
 
@@ -173,6 +178,7 @@ v0.2
 - [x] Market data
 - [x] Stock news
 - [x] Financial statements
+- [x] Financial analysis
 
 Upcoming:
 - [ ] Options chain
