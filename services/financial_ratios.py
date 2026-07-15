@@ -143,6 +143,14 @@ def get_financial_ratios(
                 income_data["revenue"],
             )
         ),
+
+        "cash_conversion": format_percent_ratio(
+            safe_divide(
+                cash_data["operating_cash_flow"],
+                income_data["net_income"],
+            )
+        ),
+        
     }
 
     return success_response(

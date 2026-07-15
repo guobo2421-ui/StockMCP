@@ -6,9 +6,15 @@ from typing import Any
 
 from mcp_instance import mcp
 from services.financial_data import get_income_statement, get_balance_sheet, get_cash_flow
-from services.financial_ratio import get_financial_ratios
-from services.valuation_ratio import get_valuation_ratios
-from services.financial_analysis import get_profitability_analysis
+from services.financial_ratios import get_financial_ratios
+from services.valuation_ratios import get_valuation_ratios
+from services.financial_analysis import (
+    get_profitability_analysis,
+    get_liquidity_analysis,
+    get_leverage_analysis,
+    get_valuation_analysis,
+    get_financial_health_analysis,
+)
 
 
 @mcp.tool()
@@ -103,11 +109,75 @@ def profitability_analysis(
     period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company profitability_analysis.
+    Return company profitability analysis.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
         period: annual or quarterly
     """
 
-    return get_profitability_analysis(symbol, period)    
+    return get_profitability_analysis(symbol, period)
+
+
+@mcp.tool()
+def liquidity_analysis(
+    symbol: str,
+    period: str = "annual",
+) -> dict[str, Any]:
+    """
+    Return company liquidity analysis.
+
+    Args:
+        symbol: Stock ticker symbol (e.g. AAPL)
+        period: annual or quarterly
+    """
+
+    return get_liquidity_analysis(symbol, period)
+
+
+@mcp.tool()
+def leverage_analysis(
+    symbol: str,
+    period: str = "annual",
+) -> dict[str, Any]:
+    """
+    Return company leverage analysis.
+
+    Args:
+        symbol: Stock ticker symbol (e.g. AAPL)
+        period: annual or quarterly
+    """
+
+    return get_leverage_analysis(symbol, period)    
+
+
+@mcp.tool()
+def valuation_analysis(
+    symbol: str,
+    period: str = "annual",
+) -> dict[str, Any]:
+    """
+    Return company valuation analysis.
+
+    Args:
+        symbol: Stock ticker symbol (e.g. AAPL)
+        period: annual or quarterly
+    """
+
+    return get_valuation_analysis(symbol, period)
+
+
+@mcp.tool()
+def financial_health_analysis(
+    symbol: str,
+    period: str = "annual",
+) -> dict[str, Any]:
+    """
+    Return company financial_health analysis.
+
+    Args:
+        symbol: Stock ticker symbol (e.g. AAPL)
+        period: annual or quarterly
+    """
+
+    return get_financial_health_analysis(symbol, period)               

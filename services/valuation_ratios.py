@@ -13,6 +13,29 @@ from .common import (
 )
 
 
+def format_number_ratio(value):
+    if value is None:
+        return {
+            "value": None,
+        }
+
+    return {
+        "value": round(value, 2),
+    }
+
+
+def format_percent_ratio(value):
+    if value is None:
+        return {
+            "value": None,
+            "percent": None,
+        }
+
+    return {
+        "value": value,
+        "percent": round(value * 100, 2),
+    }
+
 def get_valuation_ratios(
     symbol: str,
     period: str = "annual",
@@ -70,28 +93,28 @@ def get_valuation_ratios(
     ratios = {
 
         # P/E = Market Cap / Net Income
-        "pe_ratio": pe_ratio,
+        "pe_ratio": format_number_ratio(pe_ratio),
 
         # P/S = Market Cap / Revenue
-        "price_sales": safe_divide(
+        "price_sales": format_number_ratio(safe_divide(
             market_cap,
             income_data["revenue"]
-        ),
+        )),
 
         # P/B = Market Cap / Shareholders Equity
-        "price_book": safe_divide(
+        "price_book": format_number_ratio(safe_divide(
             market_cap,
             balance_data["stockholders_equity"]
-        ),
+        )),
 
         # PEG = P/E / Earnings Growth Rate 
-        "peg": safe_divide(
+        "peg": format_number_ratio(safe_divide(
             pe_ratio,
             eps_growth * 100
-        ),
+        )),
 
         # EPS growth
-        "eps_growth": eps_growth,
+        "eps_growth": format_percent_ratio(eps_growth),
     }
 
 
