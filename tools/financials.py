@@ -8,6 +8,7 @@ from mcp_instance import mcp
 from services.financial_data import get_income_statement, get_balance_sheet, get_cash_flow
 from services.financial_ratio import get_financial_ratios
 from services.valuation_ratio import get_valuation_ratios
+from services.financial_analysis import get_profitability_analysis
 
 
 @mcp.tool()
@@ -93,4 +94,20 @@ def valuation_ratios(
         period: annual or quarterly
     """
 
-    return get_valuation_ratios(symbol, period)    
+    return get_valuation_ratios(symbol, period) 
+
+
+@mcp.tool()
+def profitability_analysis(
+    symbol: str,
+    period: str = "annual",
+) -> dict[str, Any]:
+    """
+    Return company profitability_analysis.
+
+    Args:
+        symbol: Stock ticker symbol (e.g. AAPL)
+        period: annual or quarterly
+    """
+
+    return get_profitability_analysis(symbol, period)    
