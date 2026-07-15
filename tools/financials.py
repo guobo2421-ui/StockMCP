@@ -8,12 +8,13 @@ from mcp_instance import mcp
 from services.financial_data import get_income_statement, get_balance_sheet, get_cash_flow
 from services.financial_ratios import get_financial_ratios
 from services.valuation_ratios import get_valuation_ratios
+from services.company_report import get_company_report 
 from services.financial_analysis import (
     get_profitability_analysis,
     get_liquidity_analysis,
     get_leverage_analysis,
     get_valuation_analysis,
-    get_financial_health_analysis,
+    get_financial_health_analysis,   
 )
 
 
@@ -180,4 +181,16 @@ def financial_health_analysis(
         period: annual or quarterly
     """
 
-    return get_financial_health_analysis(symbol, period)               
+    return get_financial_health_analysis(symbol, period)    
+
+
+@mcp.tool()
+def company_report(
+    symbol: str,
+    period: str = "annual",
+):
+    """
+    Return complete financial analysis report.
+    """
+
+    return get_company_report(symbol, period)               
