@@ -39,33 +39,28 @@ def get_company_report(
 
 
     profitability = get_profitability_analysis(
-        symbol,
-        period
+        symbol
     )
 
     liquidity = get_liquidity_analysis(
-        symbol,
-        period
+        symbol
     )
 
     leverage = get_leverage_analysis(
-        symbol,
-        period
+        symbol
     )
 
     valuation = get_valuation_analysis(
-        symbol,
-        period
+        symbol
     )
 
     health = get_financial_health_analysis(
-        symbol,
-        period
+        symbol
     )
 
     return success_response(
         symbol = symbol,
-        period = period,
+        period = "TTM",
         company=company,
 
         analysis={

@@ -1,9 +1,18 @@
 from typing import Any
 
-from .yahoo import get_company_info
+from .yahoo import (
+    get_stock_price,
+    get_company_info
+)
+
 from .financial_data import (
     get_income_statement,
-    get_balance_sheet,
+)
+
+from .financial_ttm import (
+    get_ttm_income_statement,
+    get_current_balance_sheet,    
+    get_ttm_cash_flow,
 )
 
 from .common import (
@@ -38,88 +47,109 @@ def format_percent_ratio(value):
 
 def get_valuation_ratios(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company valuation ratios such as P/E, PEG, Price/Sales, and Price/Book. 
+    Return company valuation ratios such as P/E, PEG,
+    Price/Sales, and Price/Book.
     """
 
     if not symbol:
         return error_response(
             "MISSING_SYMBOL",
-            "symbol is required"
+            "symbol is required",
         )
 
     symbol = symbol.strip().upper()
+
+    price = get_stock_price(symbol)
+    if not price["success"]:
+        return price
 
     company = get_company_info(symbol)
     if not company["success"]:
         return company
 
-    income = get_income_statement(symbol, period, limit=2)
+    income = get_ttm_income_statement(symbol)
     if not income["success"]:
         return income
-        
-    if len(income["financials"]) < 2:
-        return error_response(
-            "INSUFFICIENT_DATA",
-            "At least two financial reports are required to calculate PEG."
-        )
 
-    balance = get_balance_sheet(symbol, period, limit=1)
+    balance = get_current_balance_sheet(symbol)
     if not balance["success"]:
         return balance
 
+    current_price = price.get("price")
     market_cap = company.get("market_cap")
 
-    income_data = income["financials"][0]
-    previous_income_data = income["financials"][1]
+    current_ttm = income["current_ttm"]
+    previous_ttm = income["previous_ttm"]
 
-    balance_data = balance["financials"][0]
+    balance_data = balance["current"]
 
-    # EPS Growth = (Current EPS - Previous EPS) / Previous EPS
-    # EPS source: Diluted EPS 
+    current_eps = current_ttm.get("diluted_eps")
+    previous_eps = previous_ttm.get("diluted_eps")
+
+    # EPS Growth =
+    # (Current EPS - Previous EPS) / Previous EPS
     eps_growth = safe_divide(
-        income_data["diluted_eps"] - previous_income_data["diluted_eps"], 
-        previous_income_data["diluted_eps"]
+        current_eps - previous_eps
+        if current_eps is not None
+        and previous_eps is not None
+        else None,
+        previous_eps,
     )
 
+    # P/E (TTM) =
+    # Current Price / TTM Diluted EPS
     pe_ratio = safe_divide(
-        market_cap,
-        income_data["net_income"]
-    ) 
+        current_price,
+        current_eps
+        if current_eps is not None
+        and current_eps > 0
+        else None,
+    )
 
-    # Valuation ratios
+    # PEG =
+    # P/E / EPS Growth Rate (%)
+    peg = None
+
+    if eps_growth is not None and eps_growth > 0:
+        peg = safe_divide(
+            pe_ratio,
+            eps_growth * 100,
+        )
+
     ratios = {
 
-        # P/E = Market Cap / Net Income
+        # P/E = Current Price / TTM Diluted EPS
         "pe_ratio": format_number_ratio(pe_ratio),
 
-        # P/S = Market Cap / Revenue
-        "price_sales": format_number_ratio(safe_divide(
-            market_cap,
-            income_data["revenue"]
-        )),
+        # P/S = Market Cap / TTM Revenue
+        "price_sales": format_number_ratio(
+            safe_divide(
+                market_cap,
+                current_ttm["revenue"],
+            )
+        ),
 
-        # P/B = Market Cap / Shareholders Equity
-        "price_book": format_number_ratio(safe_divide(
-            market_cap,
-            balance_data["stockholders_equity"]
-        )),
+        # P/B = Market Cap / Shareholders' Equity
+        "price_book": format_number_ratio(
+            safe_divide(
+                market_cap,
+                balance_data["stockholders_equity"],
+            )
+        ),
 
-        # PEG = P/E / Earnings Growth Rate 
-        "peg": format_number_ratio(safe_divide(
-            pe_ratio,
-            eps_growth * 100
-        )),
+        # PEG = P/E / EPS Growth Rate (%)
+        "peg": format_number_ratio(peg),
 
-        # EPS growth
-        "eps_growth": format_percent_ratio(eps_growth),
+        # EPS Growth
+        "eps_growth": format_percent_ratio(
+            eps_growth,
+        ),
     }
-
 
     return success_response(
         symbol=symbol,
-        period = period,        
-        ratios=ratios
+        period="TTM",
+        ratios=ratios,
     )

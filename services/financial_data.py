@@ -177,6 +177,9 @@ def get_financial_data(
     financials = []
 
     for column in df.columns:
+        print("column")
+        print(column)
+
         report = {
             "date": column.strftime("%Y-%m-%d")
         }

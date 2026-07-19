@@ -16,10 +16,16 @@ from services.financial_analysis import (
     get_financial_health_analysis,
 )
 
+from services.financial_ttm import (
+    get_ttm_income_statement,
+    get_current_balance_sheet,
+    get_ttm_cash_flow,
+)
+
 from services.company_report import get_company_report
 
 
-SYMBOL = "AAPL"
+SYMBOL = "GOOGL"
 
 
 def test_company_info():
@@ -65,6 +71,28 @@ def test_analysis():
     print(get_financial_health_analysis(SYMBOL))
 
 
+def test_finacial_ttm():
+
+    print("\n=== ttm imcome statement ===")
+    print(get_ttm_income_statement(SYMBOL))
+
+    print("\n=== ttm balance sheet ===")
+    print(get_ttm_balance_sheet(SYMBOL))
+
+    print("\n=== ttm cash flow ===")
+    print(get_ttm_cash_flow(SYMBOL))
+
+def test_finacial_ttm():
+
+    print("\n=== ttm imcome statement ===")
+    print(get_ttm_income_statement(SYMBOL))
+
+    print("\n=== ttm balance sheet ===")
+    print(get_current_balance_sheet(SYMBOL))
+
+    print("\n=== ttm cash flow ===")
+    print(get_ttm_cash_flow(SYMBOL))
+
 def test_company_report():
 
     print("\n=== COMPANY REPORT ===")
@@ -73,10 +101,12 @@ def test_company_report():
     print(report)
 
 
+
 if __name__ == "__main__":
 
     test_company_info()
     test_financial_statements()
     test_ratios()
     test_analysis()
+    test_finacial_ttm()  
     test_company_report()

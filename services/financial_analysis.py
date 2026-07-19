@@ -334,7 +334,6 @@ def get_lower_better_rating(
 
 def get_analysis(
     symbol: str,
-    period: str = "annual",
     get_data: Callable[[str, str], dict[str, Any]] = get_financial_ratios,
     rules: RuleTable = PROFITABILITY_RULES, 
     category: str = "profitability",
@@ -351,7 +350,7 @@ def get_analysis(
 
     symbol = symbol.strip().upper()
 
-    financial_ratio = get_data(symbol, period)
+    financial_ratio = get_data(symbol)
 
     if not financial_ratio["success"]:
         return financial_ratio
@@ -388,72 +387,66 @@ def get_analysis(
 
     return success_response(
         symbol = symbol,
-        period = period,
         category = category,
         analysis = analysis,
     )  
 
 
-def get_profitability_analysis(symbol, period="annual"):
+def get_profitability_analysis(symbol):
     """
     Return company profitability analysis.
     """
 
     return get_analysis(
         symbol,
-        period,
         get_financial_ratios,
         PROFITABILITY_RULES,
         "profitability",
     )
 
-def get_liquidity_analysis(symbol, period="annual"):
+def get_liquidity_analysis(symbol):
     """
     Return company liquidity analysis.
     """
 
     return get_analysis(
         symbol,
-        period,
         get_financial_ratios,
         LIQUIDITY_RULES,
         "liquidity",
     )
 
-def get_leverage_analysis(symbol, period="annual"):
+def get_leverage_analysis(symbol):
     """
     Return company leverage analysis.
     """
 
     return get_analysis(
         symbol,
-        period,
         get_financial_ratios,
         LEVERAGE_RULES,
         "leverage",
     )
 
-def get_valuation_analysis(symbol, period="annual"):
+def get_valuation_analysis(symbol):
     """
     Return company valuation analysis.
     """
 
     return get_analysis(
         symbol,
-        period,
         get_valuation_ratios,
         VALUATION_RULES,
         "valuation",
     )
 
-def get_financial_health_analysis(symbol, period="annual"): 
+def get_financial_health_analysis(symbol): 
     """
     Return company health analysis.
     """
 
     return get_analysis(
         symbol,
-        period,
         get_financial_ratios,
         FINANCIAL_HEALTH_RULES,
         "financial_health",

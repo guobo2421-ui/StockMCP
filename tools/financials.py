@@ -75,122 +75,114 @@ def cash_flow(
 @mcp.tool()
 def financial_ratios(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company ratios.
+    Return company financial ratios based on TTM data.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
-        period: annual or quarterly
     """
 
-    return get_financial_ratios(symbol, period)
+    return get_financial_ratios(symbol)
 
 
 @mcp.tool()
 def valuation_ratios(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company valuation ratios.
+    Return company valuation ratios based on TTM data.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
-        period: annual or quarterly
     """
 
-    return get_valuation_ratios(symbol, period) 
+    return get_valuation_ratios(symbol) 
 
 
 @mcp.tool()
 def profitability_analysis(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company profitability analysis.
+    Return company profitability analysis based on TTM data.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
         period: annual or quarterly
     """
 
-    return get_profitability_analysis(symbol, period)
+    return get_profitability_analysis(symbol)
 
 
 @mcp.tool()
 def liquidity_analysis(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company liquidity analysis.
+    Return company liquidity analysis based on TTM data.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
         period: annual or quarterly
     """
 
-    return get_liquidity_analysis(symbol, period)
+    return get_liquidity_analysis(symbol)
 
 
 @mcp.tool()
 def leverage_analysis(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company leverage analysis.
+    Return company leverage analysis based on TTM data.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
         period: annual or quarterly
     """
 
-    return get_leverage_analysis(symbol, period)    
+    return get_leverage_analysis(symbol)    
 
 
 @mcp.tool()
 def valuation_analysis(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company valuation analysis.
+    Return company valuation analysis based on TTM data.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
         period: annual or quarterly
     """
 
-    return get_valuation_analysis(symbol, period)
+    return get_valuation_analysis(symbol)
 
 
 @mcp.tool()
 def financial_health_analysis(
     symbol: str,
-    period: str = "annual",
 ) -> dict[str, Any]:
     """
-    Return company financial_health analysis.
+    Return company financial_health analysis based on TTM data.
 
     Args:
         symbol: Stock ticker symbol (e.g. AAPL)
         period: annual or quarterly
     """
 
-    return get_financial_health_analysis(symbol, period)    
+    return get_financial_health_analysis(symbol)    
 
 
 @mcp.tool()
 def company_report(
     symbol: str,
-    period: str = "annual",
 ):
     """
-    Return complete financial analysis report.
+    Return complete financial analysis report based on TTM data.
     """
 
-    return get_company_report(symbol, period)               
+    return get_company_report(symbol) 
+
+
