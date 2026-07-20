@@ -13,6 +13,7 @@ import tools.company
 import tools.market
 import tools.news
 import tools.financials
+import tools.forecast
 
 if __name__ == "__main__":
     mcp.run()

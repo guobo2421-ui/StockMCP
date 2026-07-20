@@ -1,9 +1,3 @@
-from .financial_data import (
-    get_income_statement,
-    get_balance_sheet,
-    get_cash_flow,
-)
-
 from .sec_financial_data import (
     get_sec_quarterly_data,
     get_sec_cumulative_flow_quarterly_data,
@@ -14,6 +8,7 @@ from .sec_financial_data import (
 from .common import (
     success_response,
     error_response,
+    safe_divide,
 )
 
 def calculate_ttm(records):
@@ -70,6 +65,185 @@ def get_current_previous_point_in_time(
     previous = records[-2]
 
     return current, previous
+
+def calculate_trend_direction(
+    latest_value: float | None,
+    previous_value: float | None,
+    threshold: float = 0.02,
+) -> str:
+
+    if (
+        latest_value is None
+        or previous_value is None
+    ):
+        return "UNKNOWN"
+
+    if previous_value == 0:
+        return "UNKNOWN"
+
+    change = (
+        latest_value - previous_value
+    ) / abs(previous_value)
+
+    if change > threshold:
+        return "IMPROVING"
+
+    if change < -threshold:
+        return "DECLINING"
+
+    return "STABLE"
+
+
+def calculate_percent_change(
+    latest_value: float | None,
+    previous_value: float | None,
+) -> float | None:
+
+    if (
+        latest_value is None
+        or previous_value is None
+        or previous_value == 0
+    ):
+        return None
+
+    return (
+        (latest_value - previous_value)
+        / abs(previous_value)
+    ) * 100
+
+def get_trend_summary(
+    trends: list[dict],
+) -> dict:
+
+    if len(trends) < 5:
+        raise ValueError(
+            "At least 5 quarterly trends are required "
+            "for trend summary."
+        )
+
+    latest = trends[-1]
+
+    # Compare with the same quarter one year earlier
+    previous = trends[-5]
+
+    return {
+
+        "latest_period": latest["period_end"],
+
+        "comparison_period": previous["period_end"],
+
+        # -------------------------------------------------
+        # Revenue
+        # -------------------------------------------------
+
+        "revenue": {
+
+            "direction": calculate_trend_direction(
+                latest["revenue"],
+                previous["revenue"],
+            ),
+
+            "change_percent": round(
+                calculate_percent_change(
+                    latest["revenue"],
+                    previous["revenue"],
+                ),
+                2,
+            ),
+
+        },
+
+        # -------------------------------------------------
+        # Gross Margin
+        # -------------------------------------------------
+
+        "gross_margin": {
+
+            "direction": calculate_trend_direction(
+                latest["gross_margin"],
+                previous["gross_margin"],
+            ),
+
+            "change_percentage_points": round(
+
+                (
+                    latest["gross_margin"]
+                    - previous["gross_margin"]
+                ) * 100,
+
+                2,
+
+            ),
+
+        },
+
+        # -------------------------------------------------
+        # Operating Margin
+        # -------------------------------------------------
+
+        "operating_margin": {
+
+            "direction": calculate_trend_direction(
+                latest["operating_margin"],
+                previous["operating_margin"],
+            ),
+
+            "change_percentage_points": round(
+
+                (
+                    latest["operating_margin"]
+                    - previous["operating_margin"]
+                ) * 100,
+
+                2,
+
+            ),
+
+        },
+
+        # -------------------------------------------------
+        # Net Income
+        # -------------------------------------------------
+
+        "net_income": {
+
+            "direction": calculate_trend_direction(
+                latest["net_income"],
+                previous["net_income"],
+            ),
+
+            "change_percent": round(
+                calculate_percent_change(
+                    latest["net_income"],
+                    previous["net_income"],
+                ),
+                2,
+            ),
+
+        },
+
+        # -------------------------------------------------
+        # Free Cash Flow
+        # -------------------------------------------------
+
+        "free_cash_flow": {
+
+            "direction": calculate_trend_direction(
+                latest["free_cash_flow"],
+                previous["free_cash_flow"],
+            ),
+
+            "change_percent": round(
+                calculate_percent_change(
+                    latest["free_cash_flow"],
+                    previous["free_cash_flow"],
+                ),
+                2,
+            ),
+
+        },
+
+    }
 
 def get_ttm_income_statement(symbol: str) -> dict:
 
@@ -323,5 +497,205 @@ def get_current_balance_sheet(symbol: str) -> dict:
             "latest_date":
                 current_assets["period_end"],
         },
+
+    )
+
+# SEC historical trends
+def get_financial_trends(symbol: str) -> dict:
+
+    revenue = get_sec_quarterly_data(
+        symbol,
+        "revenue",
+        8,
+    )
+
+    gross_profit = get_sec_gross_profit(
+        symbol,
+        8,
+    )
+
+    operating_income = get_sec_quarterly_data(
+        symbol,
+        "operating_income",
+        8,
+    )
+
+    net_income = get_sec_quarterly_data(
+        symbol,
+        "net_income",
+        8,
+    )
+
+    operating_cash_flow = (
+        get_sec_cumulative_flow_quarterly_data(
+            symbol,
+            "operating_cash_flow",
+            8,
+        )
+    )
+
+    capital_expenditures = (
+        get_sec_cumulative_flow_quarterly_data(
+            symbol,
+            "capital_expenditures",
+            8,
+        )
+    )
+
+    # ---------------------------------------------------------
+    # Validate data
+    # ---------------------------------------------------------
+
+    if (
+        len(revenue) < 4
+        or len(gross_profit) < 4
+        or len(operating_income) < 4
+        or len(net_income) < 4
+        or len(operating_cash_flow) < 4
+        or len(capital_expenditures) < 4
+    ):
+        raise ValueError(
+            "At least 4 quarterly reports are required "
+            "for financial trends."
+        )
+
+    # ---------------------------------------------------------
+    # Create lookup dictionaries by period_end
+    # ---------------------------------------------------------
+
+    gross_profit_by_date = {
+        item["period_end"]: item
+        for item in gross_profit
+    }
+
+    operating_income_by_date = {
+        item["period_end"]: item
+        for item in operating_income
+    }
+
+    net_income_by_date = {
+        item["period_end"]: item
+        for item in net_income
+    }
+
+    operating_cash_flow_by_date = {
+        item["period_end"]: item
+        for item in operating_cash_flow
+    }
+
+    capital_expenditures_by_date = {
+        item["period_end"]: item
+        for item in capital_expenditures
+    }
+
+    # ---------------------------------------------------------
+    # Build trends
+    # ---------------------------------------------------------
+
+    trends = []
+
+    for revenue_item in revenue:
+
+        period_end = revenue_item["period_end"]
+
+        revenue_value = revenue_item["value"]
+
+        gross_profit_item = (
+            gross_profit_by_date.get(period_end)
+        )
+
+        operating_income_item = (
+            operating_income_by_date.get(period_end)
+        )
+
+        net_income_item = (
+            net_income_by_date.get(period_end)
+        )
+
+        operating_cash_flow_item = (
+            operating_cash_flow_by_date.get(period_end)
+        )
+
+        capital_expenditures_item = (
+            capital_expenditures_by_date.get(period_end)
+        )
+
+        # Skip incomplete quarters
+        if (
+            gross_profit_item is None
+            or operating_income_item is None
+            or net_income_item is None
+            or operating_cash_flow_item is None
+            or capital_expenditures_item is None
+        ):
+            continue
+
+        gross_profit_value = (
+            gross_profit_item["value"]
+        )
+
+        operating_income_value = (
+            operating_income_item["value"]
+        )
+
+        net_income_value = (
+            net_income_item["value"]
+        )
+
+        operating_cash_flow_value = (
+            operating_cash_flow_item["value"]
+        )
+
+        capital_expenditures_value = (
+            capital_expenditures_item["value"]
+        )
+
+        free_cash_flow = (
+            operating_cash_flow_value
+            - abs(capital_expenditures_value)
+        )
+
+        trends.append({
+
+            "period_end": period_end,
+
+            "revenue": revenue_value,
+
+            "gross_margin": safe_divide(
+                gross_profit_value,
+                revenue_value,
+            ),
+
+            "operating_margin": safe_divide(
+                operating_income_value,
+                revenue_value,
+            ),
+
+            "net_income": net_income_value,
+
+            "free_cash_flow": free_cash_flow,
+
+        })
+
+    if len(trends) < 4:
+
+        raise ValueError(
+            "At least 4 complete quarterly reports "
+            "are required for financial trends."
+        )
+
+    summary = get_trend_summary(
+        trends
+    )
+
+    return success_response(
+
+        symbol=symbol,
+
+        count=len(trends),
+
+        trends=trends,
+
+        summary=summary,
 
     )

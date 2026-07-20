@@ -1,6 +1,11 @@
-from typing import Annotated, Any
+"""
+MCP tools for market status.
+"""
+
+from typing import Any
 
 from mcp_instance import mcp
+
 from services.market_data import get_market_status
 
 @mcp.tool()

@@ -5,10 +5,6 @@ from .yahoo import (
     get_company_info
 )
 
-from .financial_data import (
-    get_income_statement,
-)
-
 from .financial_ttm import (
     get_ttm_income_statement,
     get_current_balance_sheet,    

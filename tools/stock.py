@@ -1,6 +1,11 @@
-from typing import Annotated, Any
+"""
+MCP tools for company stock closing stock price and history.
+"""
+
+from typing import Any, Annotated
 
 from mcp_instance import mcp
+
 from services.yahoo import (
     get_stock_price,
     get_stock_history,
@@ -21,7 +26,7 @@ def stock_history(
     symbol: Annotated[str, "Stock ticker symbol (e.g. AAPL, MSFT, GOOGL)"],
     period: Annotated[
         str,
-        "Historical period (e.g. 1d, 1mo, 1y, max)",
+        "Historical period (e.g. 1d, 1mo, 3mo, 6mo, 1y, 5y, or max.)",
     ],
 ) -> list[dict[str, Any]]:
     """Return historical OHLCV data."""

@@ -20,36 +20,48 @@ from services.financial_ttm import (
     get_ttm_income_statement,
     get_current_balance_sheet,
     get_ttm_cash_flow,
+    get_financial_trends,
 )
 
+from services.forecast_data import (
+    get_analyst_forecast,
+    get_company_forecast,
+)
+
+from services.market_data import get_market_status
 from services.company_report import get_company_report
+from services.yahoo import get_stock_news
+from services.yahoo import (
+    get_stock_price,
+    get_stock_history,
+)
 
-
-SYMBOL = "GOOGL"
+SYMBOL = "AAPL"
 
 
 def test_company_info():
-    print("\n=== Company info ===")    
-    result = get_company_info(SYMBOL)
-    print(result)
+    print("\n=== Company info ===")
+    print(get_company_info(SYMBOL))
 
 
 def test_financial_statements():
-    print("\n=== Income statement ===")    
+
+    print("\n=== Income statement ===")
     print(get_income_statement(SYMBOL))
 
-    print("\n=== Balance sheet ===")   
+    print("\n=== Balance sheet ===")
     print(get_balance_sheet(SYMBOL))
 
-    print("\n=== Cash flow ===")    
+    print("\n=== Cash flow ===")
     print(get_cash_flow(SYMBOL))
 
 
 def test_ratios():
-    print("\n=== Financial ratios ===")    
+
+    print("\n=== Financial ratios ===")
     print(get_financial_ratios(SYMBOL))
 
-    print("\n=== Valuation ratios ===")    
+    print("\n=== Valuation ratios ===")
     print(get_valuation_ratios(SYMBOL))
 
 
@@ -71,42 +83,68 @@ def test_analysis():
     print(get_financial_health_analysis(SYMBOL))
 
 
-def test_finacial_ttm():
+def test_financial_ttm():
 
-    print("\n=== ttm imcome statement ===")
+    print("\n=== TTM income statement ===")
     print(get_ttm_income_statement(SYMBOL))
 
-    print("\n=== ttm balance sheet ===")
-    print(get_ttm_balance_sheet(SYMBOL))
-
-    print("\n=== ttm cash flow ===")
-    print(get_ttm_cash_flow(SYMBOL))
-
-def test_finacial_ttm():
-
-    print("\n=== ttm imcome statement ===")
-    print(get_ttm_income_statement(SYMBOL))
-
-    print("\n=== ttm balance sheet ===")
+    print("\n=== Current balance sheet ===")
     print(get_current_balance_sheet(SYMBOL))
 
-    print("\n=== ttm cash flow ===")
+    print("\n=== TTM cash flow ===")
     print(get_ttm_cash_flow(SYMBOL))
+
+    print("\n=== Quarterly financial trend ===")
+    print(get_financial_trends(SYMBOL))
+
+
+def test_forecast_data():
+
+    print("\n=== Analyst forecast data ===")
+    print(get_analyst_forecast(SYMBOL))
+
+
+def test_forecast():
+
+    print("\n=== Forecast ===")
+    print(get_forecast(SYMBOL))
+    print(get_company_forecast(SYMBOL))
+
+
+def test_market_status():
+
+    print("\n=== Market status ===")
+    print(get_market_status())
+
 
 def test_company_report():
 
     print("\n=== COMPANY REPORT ===")
-    report = get_company_report(SYMBOL)
-
-    print(report)
+    print(get_company_report(SYMBOL))
 
 
+def test_stock():
+
+    print("\n=== Stock ===")
+    print(get_stock_price(SYMBOL))
+
+    print(get_stock_history(SYMBOL, "1y"))
+
+
+def test_stock_news():
+
+    print("\n=== Stock news ===")
+    print(get_stock_news(SYMBOL))
 
 if __name__ == "__main__":
 
-    test_company_info()
-    test_financial_statements()
-    test_ratios()
-    test_analysis()
-    test_finacial_ttm()  
-    test_company_report()
+    #test_company_info()
+    #test_financial_statements()
+    #test_ratios()
+    #test_analysis()
+    #test_financial_ttm() 
+    test_forecast_data()    
+    #test_market_status() 
+    #test_company_report()
+    #test_stock()
+    #test_stock_news()

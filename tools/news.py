@@ -1,6 +1,11 @@
-from typing import Annotated, Any
+"""
+MCP tools for company news.
+"""
+
+from typing import Any, Annotated
 
 from mcp_instance import mcp
+
 from services.yahoo import get_stock_news
 
 

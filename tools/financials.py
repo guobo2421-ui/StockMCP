@@ -5,6 +5,7 @@ MCP tools for financial statements.
 from typing import Any
 
 from mcp_instance import mcp
+
 from services.financial_data import get_income_statement, get_balance_sheet, get_cash_flow
 from services.financial_ratios import get_financial_ratios
 from services.valuation_ratios import get_valuation_ratios
@@ -184,5 +185,3 @@ def company_report(
     """
 
     return get_company_report(symbol) 
-
-
