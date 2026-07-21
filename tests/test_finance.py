@@ -138,13 +138,13 @@ def test_stock_news():
 
 if __name__ == "__main__":
 
-    #test_company_info()
-    #test_financial_statements()
-    #test_ratios()
-    #test_analysis()
-    #test_financial_ttm() 
+    test_company_info()
+    test_financial_statements()
+    test_ratios()
+    test_analysis()
+    test_financial_ttm() 
     test_forecast_data()    
-    #test_market_status() 
-    #test_company_report()
-    #test_stock()
-    #test_stock_news()
+    test_market_status() 
+    test_company_report()
+    test_stock()
+    test_stock_news()

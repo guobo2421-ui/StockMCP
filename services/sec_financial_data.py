@@ -241,7 +241,6 @@ def get_sec_quarterly_data(
     metric: str,
     limit: int = 8,
 ) -> list[dict]:
-
     """
     Retrieve quarterly flow data from SEC Company Facts.
 
@@ -254,7 +253,7 @@ def get_sec_quarterly_data(
         Operating Cash Flow
         Capital Expenditures
 
-    For flow metrics:
+    For ordinary flow metrics:
 
         Q1, Q2, Q3:
             Use standalone quarterly values from 10-Q filings.
@@ -263,6 +262,25 @@ def get_sec_quarterly_data(
             Calculate:
 
                 FY - Q1 - Q2 - Q3
+
+    For diluted EPS:
+
+        SEC may report cumulative EPS:
+
+            Q1: 3 months
+            Q2: 6 months
+            Q3: 9 months
+            FY: 12 months
+
+        Therefore:
+
+            Q1 = Q1
+
+            Q2 = Q2 cumulative - Q1
+
+            Q3 = Q3 cumulative - Q2 cumulative
+
+            Q4 = FY - Q3 cumulative
     """
 
     if metric not in SEC_METRIC_MAPPING:
@@ -272,30 +290,48 @@ def get_sec_quarterly_data(
         )
 
 
-    data = get_sec_companyfacts(symbol)
+    data = get_sec_companyfacts(
+        symbol
+    )
 
-    sec_metrics = SEC_METRIC_MAPPING.get(metric)
+
+    sec_metrics = SEC_METRIC_MAPPING.get(
+        metric
+    )
 
     if not sec_metrics:
+
         raise ValueError(
             f"SEC metric not mapped: {metric}"
         )
 
-    if isinstance(sec_metrics, str):
-        sec_metrics = [sec_metrics]
 
-    facts = data.get("facts", {}).get("us-gaap", {})
+    if isinstance(sec_metrics, str):
+
+        sec_metrics = [
+            sec_metrics
+        ]
+
+
+    facts = data.get(
+        "facts",
+        {}
+    ).get(
+        "us-gaap",
+        {}
+    )
+
 
     concept = None
-    sec_metric = None
 
     for candidate in sec_metrics:
 
         if candidate in facts:
 
             concept = facts[candidate]
-            sec_metric = candidate
+
             break
+
 
     if concept is None:
 
@@ -328,118 +364,23 @@ def get_sec_quarterly_data(
 
 
     # =========================================================
-    # EPS
-    #
-    # EPS cannot be calculated:
-    #
-    # FY EPS - Q1 EPS - Q2 EPS - Q3 EPS
-    #
-    # Therefore only use standalone quarterly EPS.
-    # =========================================================
-
-    if metric == "diluted_eps":
-
-        quarterly = []
-
-        for item in observations:
-
-            start = item.get("start")
-            end = item.get("end")
-            form = item.get("form")
-
-            if not start or not end:
-
-                continue
-
-            duration_days = get_duration_days(
-                start,
-                end
-            )
-
-            if not 80 <= duration_days <= 100:
-
-                continue
-
-            quarterly.append({
-
-                "period_start": start,
-
-                "period_end": end,
-
-                "value": item["val"],
-
-                "form": form,
-
-                "filed": item.get("filed"),
-
-            })
-
-
-        quarterly = deduplicate_records(
-            quarterly
-        )
-
-
-        quarterly.sort(
-            key=lambda x: x["period_end"]
-        )
-
-
-        return quarterly[-limit:]
-
-
-    # =========================================================
     # STEP 1
-    # Collect standalone Q1-Q3
+    #
+    # Collect Q1, Q2, Q3, and FY observations.
+    #
+    # Use SEC fp:
+    #
+    #     Q1
+    #     Q2
+    #     Q3
+    #     FY
+    #
+    # This is important because some companies report
+    # cumulative quarterly values.
     # =========================================================
 
-    quarterly = []
+    observations_by_period = {}
 
-    for item in observations:
-
-        start = item.get("start")
-        end = item.get("end")
-        form = item.get("form")
-
-        if not start or not end:
-
-            continue
-
-        duration_days = get_duration_days(
-            start,
-            end
-        )
-
-        if not 80 <= duration_days <= 100:
-
-            continue
-
-        quarterly.append({
-
-            "period_start": start,
-
-            "period_end": end,
-
-            "value": item["val"],
-
-            "form": form,
-
-            "filed": item.get("filed"),
-
-        })
-
-
-    quarterly = deduplicate_records(
-        quarterly
-    )
-
-
-    # =========================================================
-    # STEP 2
-    # Collect annual FY values
-    # =========================================================
-
-    annual = []
 
     for item in observations:
 
@@ -448,153 +389,293 @@ def get_sec_quarterly_data(
         form = item.get("form")
         fp = item.get("fp")
 
+
         if not start or not end:
 
             continue
 
-        if form != "10-K":
+
+        if form == "10-Q" and fp == "Q1":
+
+            period_type = "Q1"
+
+
+        elif form == "10-Q" and fp == "Q2":
+
+            period_type = "Q2"
+
+
+        elif form == "10-Q" and fp == "Q3":
+
+            period_type = "Q3"
+
+
+        elif form == "10-K" and fp == "FY":
+
+            period_type = "FY"
+
+
+        else:
 
             continue
 
-        if fp != "FY":
 
-            continue
+        key = (
 
-        duration_days = get_duration_days(
             start,
-            end
+
+            end,
+
+            period_type,
+
         )
 
-        if not 340 <= duration_days <= 380:
+
+        # Keep the latest filed version of the same
+        # fiscal-period observation.
+
+        if (
+
+            key not in observations_by_period
+
+            or item.get("filed", "")
+            > observations_by_period[key].get(
+                "filed",
+                ""
+            )
+
+        ):
+
+            observations_by_period[key] = item
+
+
+    observations = list(
+        observations_by_period.values()
+    )
+
+
+    # =========================================================
+    # STEP 2
+    #
+    # Group observations by fiscal-year start.
+    #
+    # Q1, Q2, Q3, and FY for the same fiscal year
+    # should normally share the same start date.
+    # =========================================================
+
+    fiscal_years = {}
+
+
+    for item in observations:
+
+        start = item["start"]
+
+        fp = item.get("fp")
+
+
+        if fp not in (
+            "Q1",
+            "Q2",
+            "Q3",
+            "FY",
+        ):
 
             continue
 
-        annual.append({
 
-            "period_start": start,
-
-            "period_end": end,
-
-            "value": item["val"],
-
-            "form": form,
-
-            "filed": item.get("filed"),
-
-        })
-
-
-    annual = deduplicate_records(
-        annual
-    )
+        fiscal_years.setdefault(
+            start,
+            {}
+        )[fp] = item
 
 
     # =========================================================
     # STEP 3
-    # Calculate Q4
     #
-    # Q4 = FY - Q1 - Q2 - Q3
+    # Calculate standalone quarterly values.
     # =========================================================
 
-    calculated_q4 = []
-
-    for year in annual:
-
-        fy_start = year["period_start"]
-
-        fy_end = year["period_end"]
-
-        fy_value = year["value"]
+    quarterly = []
 
 
-        fiscal_quarters = [
+    for periods in fiscal_years.values():
 
-            q
+        q1 = periods.get("Q1")
 
-            for q in quarterly
+        q2 = periods.get("Q2")
 
-            if (
+        q3 = periods.get("Q3")
 
-                q["period_end"] <= fy_end
-
-                and q["period_start"] >= fy_start
-
-            )
-
-        ]
+        fy = periods.get("FY")
 
 
-        fiscal_quarters.sort(
-            key=lambda x: x["period_end"]
-        )
+        # -----------------------------------------------------
+        # Q1
+        #
+        # Q1 is already a standalone 3-month value.
+        # -----------------------------------------------------
+
+        if q1:
+
+            quarterly.append({
+
+                "period_start":
+                    q1["start"],
+
+                "period_end":
+                    q1["end"],
+
+                "value":
+                    q1["val"],
+
+                "form":
+                    "10-Q",
+
+                "filed":
+                    q1.get("filed"),
+
+            })
 
 
-        if len(fiscal_quarters) != 3:
+        # -----------------------------------------------------
+        # Q2
+        #
+        # For cumulative flow data:
+        #
+        # Q2 standalone =
+        # Q2 cumulative - Q1 cumulative
+        #
+        # For EPS, this is also the correct reconstruction
+        # when SEC reports cumulative EPS.
+        # -----------------------------------------------------
 
-            continue
+        if q1 and q2:
+
+            quarterly.append({
+
+                "period_start":
+                    q1["end"],
+
+                "period_end":
+                    q2["end"],
+
+                "value":
+                    q2["val"]
+                    - q1["val"],
+
+                "form":
+                    "CALCULATED",
+
+                "filed":
+                    q2.get("filed"),
+
+            })
 
 
-        q1, q2, q3 = fiscal_quarters
+        # -----------------------------------------------------
+        # Q3
+        #
+        # Q3 standalone =
+        # Q3 cumulative - Q2 cumulative
+        # -----------------------------------------------------
+
+        if q2 and q3:
+
+            quarterly.append({
+
+                "period_start":
+                    q2["end"],
+
+                "period_end":
+                    q3["end"],
+
+                "value":
+                    q3["val"]
+                    - q2["val"],
+
+                "form":
+                    "CALCULATED",
+
+                "filed":
+                    q3.get("filed"),
+
+            })
 
 
-        q4_value = (
+        # -----------------------------------------------------
+        # Q4
+        #
+        # Q4 standalone =
+        # FY cumulative - Q3 cumulative
+        # -----------------------------------------------------
 
-            fy_value
+        if q3 and fy:
 
-            - q1["value"]
+            quarterly.append({
 
-            - q2["value"]
+                "period_start":
+                    q3["end"],
 
-            - q3["value"]
+                "period_end":
+                    fy["end"],
 
-        )
+                "value":
+                    fy["val"]
+                    - q3["val"],
 
+                "form":
+                    "CALCULATED",
 
-        calculated_q4.append({
+                "filed":
+                    fy.get("filed"),
 
-            "period_start":
-                q3["period_end"],
-
-            "period_end":
-                fy_end,
-
-            "value":
-                q4_value,
-
-            "form":
-                "CALCULATED",
-
-            "filed":
-                year["filed"],
-
-        })
+            })
 
 
     # =========================================================
     # STEP 4
-    # Combine Q1-Q3 and calculated Q4
+    #
+    # Remove duplicate quarterly periods.
     # =========================================================
 
-    all_quarters = (
-
+    quarterly = deduplicate_records(
         quarterly
+    )
 
-        + calculated_q4
+
+    # =========================================================
+    # STEP 5
+    #
+    # Sort chronologically.
+    # =========================================================
+
+    quarterly.sort(
+
+        key=lambda x:
+            x["period_end"]
 
     )
 
 
-    all_quarters = deduplicate_records(
-        all_quarters
-    )
+    # =========================================================
+    # STEP 6
+    #
+    # Validate the requested history.
+    # =========================================================
+
+    if len(quarterly) < limit:
+
+        raise ValueError(
+
+            f"Unable to retrieve "
+            f"{limit} quarterly reports for "
+            f"{symbol} {metric}. "
+            f"Only {len(quarterly)} available."
+
+        )
 
 
-    all_quarters.sort(
-        key=lambda x: x["period_end"]
-    )
-
-
-    return all_quarters[-limit:]
+    return quarterly[-limit:]
 
 def get_sec_cumulative_flow_quarterly_data(
     symbol: str,
