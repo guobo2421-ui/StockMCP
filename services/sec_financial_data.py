@@ -186,13 +186,13 @@ def get_sec_gross_profit(
     except ValueError:
 
         # Request more history than needed
-        revenue = get_sec_quarterly_data(
+        revenue = get_sec_quarterly_data_from_candidates(
             symbol,
             "revenue",
             12,
         )
 
-        cost_of_revenue = get_sec_quarterly_data(
+        cost_of_revenue = get_sec_quarterly_data_from_candidates(
             symbol,
             "cost_of_revenue",
             12,
@@ -235,7 +235,426 @@ def get_sec_gross_profit(
             )
 
         return gross_profit[-limit:]
-        
+
+def _get_quarterly_data_from_concept(
+    observations: list[dict],
+) -> list[dict]:
+
+    observations_by_period = {}
+
+    for item in observations:
+
+        start = item.get("start")
+        end = item.get("end")
+        form = item.get("form")
+        fp = item.get("fp")
+
+        if not start or not end:
+            continue
+
+        if form == "10-Q" and fp == "Q1":
+
+            period_type = "Q1"
+
+        elif form == "10-Q" and fp == "Q2":
+
+            period_type = "Q2"
+
+        elif form == "10-Q" and fp == "Q3":
+
+            period_type = "Q3"
+
+        elif form == "10-K" and fp == "FY":
+
+            period_type = "FY"
+
+        else:
+
+            continue
+
+        key = (
+            start,
+            end,
+            period_type,
+        )
+
+        if (
+            key not in observations_by_period
+            or item.get("filed", "")
+            > observations_by_period[key].get(
+                "filed",
+                "",
+            )
+        ):
+
+            observations_by_period[key] = item
+
+    fiscal_years = {}
+
+    for item in observations_by_period.values():
+
+        start = item["start"]
+        fp = item.get("fp")
+
+        if fp not in (
+            "Q1",
+            "Q2",
+            "Q3",
+            "FY",
+        ):
+
+            continue
+
+        fiscal_years.setdefault(
+            start,
+            {},
+        )[fp] = item
+
+    quarterly = []
+
+    for periods in fiscal_years.values():
+
+        q1 = periods.get("Q1")
+        q2 = periods.get("Q2")
+        q3 = periods.get("Q3")
+        fy = periods.get("FY")
+
+        if q1:
+
+            quarterly.append({
+
+                "period_start":
+                    q1["start"],
+
+                "period_end":
+                    q1["end"],
+
+                "value":
+                    q1["val"],
+
+                "form":
+                    "10-Q",
+
+                "filed":
+                    q1.get("filed"),
+
+            })
+
+        if q1 and q2:
+
+            quarterly.append({
+
+                "period_start":
+                    q1["end"],
+
+                "period_end":
+                    q2["end"],
+
+                "value":
+                    q2["val"] - q1["val"],
+
+                "form":
+                    "CALCULATED",
+
+                "filed":
+                    q2.get("filed"),
+
+            })
+
+        if q2 and q3:
+
+            quarterly.append({
+
+                "period_start":
+                    q2["end"],
+
+                "period_end":
+                    q3["end"],
+
+                "value":
+                    q3["val"] - q2["val"],
+
+                "form":
+                    "CALCULATED",
+
+                "filed":
+                    q3.get("filed"),
+
+            })
+
+        if q3 and fy:
+
+            quarterly.append({
+
+                "period_start":
+                    q3["end"],
+
+                "period_end":
+                    fy["end"],
+
+                "value":
+                    fy["val"] - q3["val"],
+
+                "form":
+                    "CALCULATED",
+
+                "filed":
+                    fy.get("filed"),
+
+            })
+
+    quarterly = deduplicate_records(
+        quarterly
+    )
+
+    quarterly = [
+
+        record
+
+        for record in quarterly
+
+        if record["period_start"]
+        < record["period_end"]
+
+    ]
+
+    quarterly.sort(
+        key=lambda x:
+            x["period_end"]
+    )
+
+    return quarterly
+
+def get_sec_quarterly_data_from_candidates(
+    symbol: str,
+    metric: str,
+    limit: int = 8,
+) -> list[dict]:
+    """
+    Retrieve quarterly flow data by combining multiple SEC concepts.
+
+    This is useful when different SEC concepts provide different
+    historical periods for the same financial metric.
+    """
+
+    if metric not in SEC_METRIC_MAPPING:
+
+        raise ValueError(
+            f"Unsupported metric: {metric}"
+        )
+
+    data = get_sec_companyfacts(symbol)
+
+    sec_metrics = SEC_METRIC_MAPPING[metric]
+
+    if isinstance(sec_metrics, str):
+
+        sec_metrics = [
+            sec_metrics
+        ]
+
+    facts = (
+        data
+        .get("facts", {})
+        .get("us-gaap", {})
+    )
+
+    combined = {}
+
+    for candidate in sec_metrics:
+
+        concept = facts.get(candidate)
+
+        if concept is None:
+
+            continue
+
+        units = concept.get("units", {})
+
+        if metric == "diluted_eps":
+
+            unit = "USD/shares"
+
+        else:
+
+            unit = "USD"
+
+        if unit not in units:
+
+            continue
+
+        observations = units[unit]
+
+        # Use the existing quarterly reconstruction logic
+        # for this individual candidate.
+        #
+        # Temporarily use the candidate as a single-metric
+        # mapping.
+
+        candidate_observations = (
+            _get_quarterly_observations(
+                observations
+            )
+        )
+
+        for item in candidate_observations:
+
+            key = item["period_end"]
+
+            if (
+
+                key not in combined
+
+                or item.get("filed", "")
+                > combined[key].get(
+                    "filed",
+                    ""
+                )
+
+            ):
+
+                combined[key] = item
+
+    quarterly = list(
+        combined.values()
+    )
+
+    quarterly.sort(
+        key=lambda x:
+            x["period_end"]
+    )
+
+    if len(quarterly) < limit:
+
+        raise ValueError(
+            f"Unable to retrieve "
+            f"{limit} quarterly reports for "
+            f"{symbol} {metric}. "
+            f"Only {len(quarterly)} available."
+        )
+
+    return quarterly[-limit:]
+
+def get_sec_quarterly_data_from_candidates(
+    symbol: str,
+    metric: str,
+    limit: int = 8,
+) -> list[dict]:
+
+    if metric not in SEC_METRIC_MAPPING:
+
+        raise ValueError(
+            f"Unsupported metric: {metric}"
+        )
+
+    data = get_sec_companyfacts(
+        symbol
+    )
+
+    sec_metrics = SEC_METRIC_MAPPING.get(
+        metric
+    )
+
+    if not sec_metrics:
+
+        raise ValueError(
+            f"SEC metric not mapped: {metric}"
+        )
+
+    if isinstance(sec_metrics, str):
+
+        sec_metrics = [
+            sec_metrics
+        ]
+
+    facts = data.get(
+        "facts",
+        {}
+    ).get(
+        "us-gaap",
+        {}
+    )
+
+    if metric == "diluted_eps":
+
+        unit = "USD/shares"
+
+    else:
+
+        unit = "USD"
+
+    combined = {}
+
+    for candidate in sec_metrics:
+
+        concept = facts.get(
+            candidate
+        )
+
+        if concept is None:
+
+            continue
+
+        units = concept.get(
+            "units",
+            {}
+        )
+
+        if unit not in units:
+
+            continue
+
+        candidate_quarterly = (
+            _get_quarterly_data_from_concept(
+                units[unit]
+            )
+        )
+
+        for item in candidate_quarterly:
+
+            period_end = item[
+                "period_end"
+            ]
+
+            if (
+
+                period_end not in combined
+
+                or item.get("filed", "")
+                > combined[period_end].get(
+                    "filed",
+                    ""
+                )
+
+            ):
+
+                combined[period_end] = item
+
+    quarterly = list(
+        combined.values()
+    )
+
+    quarterly.sort(
+        key=lambda x:
+            x["period_end"]
+    )
+
+    if len(quarterly) < limit:
+
+        raise ValueError(
+
+            f"Unable to retrieve "
+
+            f"{limit} quarterly reports for "
+
+            f"{symbol} {metric}. "
+
+            f"Only {len(quarterly)} available."
+
+        )
+
+    return quarterly[-limit:] 
+
 def get_sec_quarterly_data(
     symbol: str,
     metric: str,
@@ -243,15 +662,6 @@ def get_sec_quarterly_data(
 ) -> list[dict]:
     """
     Retrieve quarterly flow data from SEC Company Facts.
-
-    Supported metrics:
-
-        Revenue
-        Net Income
-        Operating Income
-        Diluted EPS
-        Operating Cash Flow
-        Capital Expenditures
 
     For ordinary flow metrics:
 
@@ -299,6 +709,7 @@ def get_sec_quarterly_data(
         metric
     )
 
+
     if not sec_metrics:
 
         raise ValueError(
@@ -322,24 +733,6 @@ def get_sec_quarterly_data(
     )
 
 
-    concept = None
-
-    for candidate in sec_metrics:
-
-        if candidate in facts:
-
-            concept = facts[candidate]
-
-            break
-
-
-    if concept is None:
-
-        raise ValueError(
-            f"SEC metric not found: {sec_metrics}"
-        )
-
-
     # =========================================================
     # Select unit
     # =========================================================
@@ -353,12 +746,87 @@ def get_sec_quarterly_data(
         unit = "USD"
 
 
-    if unit not in concept["units"]:
+    # =========================================================
+    # Select SEC concept
+    #
+    # Some companies have multiple possible SEC tags for the
+    # same metric.
+    #
+    # Do not simply select the first existing tag. One tag may
+    # contain only old historical data while another contains
+    # current data.
+    #
+    # Select the candidate with the latest observation date.
+    # =========================================================
 
-        raise ValueError(
-            f"Unit not found for {metric}: {unit}"
+    concept = None
+
+    selected_candidate = None
+
+    latest_end = ""
+
+
+    for candidate in sec_metrics:
+
+        if candidate not in facts:
+
+            continue
+
+
+        candidate_concept = facts[candidate]
+
+
+        candidate_units = candidate_concept.get(
+            "units",
+            {}
         )
 
+
+        if unit not in candidate_units:
+
+            continue
+
+
+        candidate_observations = candidate_units[unit]
+
+
+        candidate_latest_end = max(
+
+            (
+
+                item.get("end", "")
+
+                for item in candidate_observations
+
+                if item.get("end")
+
+            ),
+
+            default=""
+
+        )
+
+
+        if candidate_latest_end > latest_end:
+
+            latest_end = candidate_latest_end
+
+            concept = candidate_concept
+
+            selected_candidate = candidate
+
+    if concept is None:
+
+        raise ValueError(
+
+            f"SEC metric not found: {sec_metrics}"
+
+        )
+
+
+    # =========================================================
+    # Get observations
+    # =========================================================
 
     observations = concept["units"][unit]
 
@@ -367,16 +835,6 @@ def get_sec_quarterly_data(
     # STEP 1
     #
     # Collect Q1, Q2, Q3, and FY observations.
-    #
-    # Use SEC fp:
-    #
-    #     Q1
-    #     Q2
-    #     Q3
-    #     FY
-    #
-    # This is important because some companies report
-    # cumulative quarterly values.
     # =========================================================
 
     observations_by_period = {}
@@ -385,8 +843,11 @@ def get_sec_quarterly_data(
     for item in observations:
 
         start = item.get("start")
+
         end = item.get("end")
+
         form = item.get("form")
+
         fp = item.get("fp")
 
 
@@ -450,7 +911,9 @@ def get_sec_quarterly_data(
 
 
     observations = list(
+
         observations_by_period.values()
+
     )
 
 
@@ -458,9 +921,6 @@ def get_sec_quarterly_data(
     # STEP 2
     #
     # Group observations by fiscal-year start.
-    #
-    # Q1, Q2, Q3, and FY for the same fiscal year
-    # should normally share the same start date.
     # =========================================================
 
     fiscal_years = {}
@@ -474,18 +934,26 @@ def get_sec_quarterly_data(
 
 
         if fp not in (
+
             "Q1",
+
             "Q2",
+
             "Q3",
+
             "FY",
+
         ):
 
             continue
 
 
         fiscal_years.setdefault(
+
             start,
+
             {}
+
         )[fp] = item
 
 
@@ -511,8 +979,6 @@ def get_sec_quarterly_data(
 
         # -----------------------------------------------------
         # Q1
-        #
-        # Q1 is already a standalone 3-month value.
         # -----------------------------------------------------
 
         if q1:
@@ -520,18 +986,23 @@ def get_sec_quarterly_data(
             quarterly.append({
 
                 "period_start":
+
                     q1["start"],
 
                 "period_end":
+
                     q1["end"],
 
                 "value":
+
                     q1["val"],
 
                 "form":
+
                     "10-Q",
 
                 "filed":
+
                     q1.get("filed"),
 
             })
@@ -539,14 +1010,6 @@ def get_sec_quarterly_data(
 
         # -----------------------------------------------------
         # Q2
-        #
-        # For cumulative flow data:
-        #
-        # Q2 standalone =
-        # Q2 cumulative - Q1 cumulative
-        #
-        # For EPS, this is also the correct reconstruction
-        # when SEC reports cumulative EPS.
         # -----------------------------------------------------
 
         if q1 and q2:
@@ -554,19 +1017,25 @@ def get_sec_quarterly_data(
             quarterly.append({
 
                 "period_start":
+
                     q1["end"],
 
                 "period_end":
+
                     q2["end"],
 
                 "value":
+
                     q2["val"]
+
                     - q1["val"],
 
                 "form":
+
                     "CALCULATED",
 
                 "filed":
+
                     q2.get("filed"),
 
             })
@@ -574,9 +1043,6 @@ def get_sec_quarterly_data(
 
         # -----------------------------------------------------
         # Q3
-        #
-        # Q3 standalone =
-        # Q3 cumulative - Q2 cumulative
         # -----------------------------------------------------
 
         if q2 and q3:
@@ -584,19 +1050,25 @@ def get_sec_quarterly_data(
             quarterly.append({
 
                 "period_start":
+
                     q2["end"],
 
                 "period_end":
+
                     q3["end"],
 
                 "value":
+
                     q3["val"]
+
                     - q2["val"],
 
                 "form":
+
                     "CALCULATED",
 
                 "filed":
+
                     q3.get("filed"),
 
             })
@@ -604,9 +1076,6 @@ def get_sec_quarterly_data(
 
         # -----------------------------------------------------
         # Q4
-        #
-        # Q4 standalone =
-        # FY cumulative - Q3 cumulative
         # -----------------------------------------------------
 
         if q3 and fy:
@@ -614,19 +1083,25 @@ def get_sec_quarterly_data(
             quarterly.append({
 
                 "period_start":
+
                     q3["end"],
 
                 "period_end":
+
                     fy["end"],
 
                 "value":
+
                     fy["val"]
+
                     - q3["val"],
 
                 "form":
+
                     "CALCULATED",
 
                 "filed":
+
                     fy.get("filed"),
 
             })
@@ -639,9 +1114,16 @@ def get_sec_quarterly_data(
     # =========================================================
 
     quarterly = deduplicate_records(
+
         quarterly
+
     )
 
+    quarterly = [
+        record
+        for record in quarterly
+        if record["period_start"] < record["period_end"]
+    ]
 
     # =========================================================
     # STEP 5
@@ -652,15 +1134,15 @@ def get_sec_quarterly_data(
     quarterly.sort(
 
         key=lambda x:
+
             x["period_end"]
 
     )
 
-
     # =========================================================
     # STEP 6
     #
-    # Validate the requested history.
+    # Validate requested history.
     # =========================================================
 
     if len(quarterly) < limit:
@@ -668,8 +1150,11 @@ def get_sec_quarterly_data(
         raise ValueError(
 
             f"Unable to retrieve "
+
             f"{limit} quarterly reports for "
+
             f"{symbol} {metric}. "
+
             f"Only {len(quarterly)} available."
 
         )
@@ -699,15 +1184,50 @@ def get_sec_cumulative_flow_quarterly_data(
 
     concept = None
     concept_name = None
+    latest_end = ""
 
     for candidate in sec_metrics:
 
-        if candidate in facts:
+        if candidate not in facts:
+
+            continue
+
+        candidate_concept = facts[candidate]
+
+        candidate_units = candidate_concept.get(
+            "units",
+            {}
+        )
+
+        if "USD" not in candidate_units:
+
+            continue
+
+        candidate_observations = candidate_units["USD"]
+
+        candidate_latest_end = max(
+
+            (
+                item.get("end", "")
+
+                for item in candidate_observations
+
+                if item.get("end")
+
+            ),
+
+            default=""
+
+        )
+
+        if candidate_latest_end > latest_end:
+
+            latest_end = candidate_latest_end
 
             concept_name = candidate
-            concept = facts[candidate]
 
-            break
+            concept = candidate_concept
+
 
     if concept is None:
 

@@ -545,7 +545,6 @@ def get_financial_trends(symbol: str) -> dict:
     # ---------------------------------------------------------
     # Validate data
     # ---------------------------------------------------------
-
     if (
         len(revenue) < 4
         or len(gross_profit) < 4
@@ -676,7 +675,7 @@ def get_financial_trends(symbol: str) -> dict:
             "free_cash_flow": free_cash_flow,
 
         })
-
+       
     if len(trends) < 4:
 
         raise ValueError(
