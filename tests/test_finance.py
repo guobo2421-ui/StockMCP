@@ -23,10 +23,12 @@ from services.financial_ttm import (
     get_financial_trends,
 )
 
-from services.forecast_data import (
-    get_analyst_forecast,
-    get_company_forecast,
+from services.options_data import (
+    get_option_expirations,
+    get_option_chain,
+    get_option_summary,
 )
+
 
 from services.market_data import get_market_status
 from services.company_report import get_company_report
@@ -131,10 +133,21 @@ def test_stock():
     print(get_stock_history(SYMBOL, "1y"))
 
 
-def test_stock_news():
+def test_stock():
 
-    print("\n=== Stock news ===")
-    print(get_stock_news(SYMBOL))
+    print("\n=== Stock ===")
+    print(get_stock_price(SYMBOL))
+
+    print(get_stock_history(SYMBOL, "1y"))
+
+
+def test_options():
+
+    print("\n=== options ===")
+    expirations = get_option_expirations(SYMBOL)
+    print(expirations)
+    print(get_option_chain(SYMBOL, expirations["expiration_dates"][0])) 
+    print(get_option_summary(SYMBOL, expirations["expiration_dates"][0]))   
 
 if __name__ == "__main__":
 
@@ -148,3 +161,4 @@ if __name__ == "__main__":
     test_company_report()
     test_stock()
     test_stock_news()
+    test_options()

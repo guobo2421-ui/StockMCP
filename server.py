@@ -14,6 +14,7 @@ import tools.market
 import tools.news
 import tools.financials
 import tools.forecast
+import tools.option
 
 if __name__ == "__main__":
     mcp.run()

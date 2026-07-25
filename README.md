@@ -84,6 +84,9 @@ StockMCP separates business logic (services/) from MCP tool interfaces (tools/),
 | `leverage_analysis` | Debt/leverage analysis |
 | `liquidity_analysis` | Liquidity analysis |
 | `market_status` | Current market status |
+| `get_option_expirations` | Option expirations |
+| `get_option_chain` | Option chain |
+| `get_option_summary` | Option summary |
 | `profitability_analysis()` | Profitability analysis |
 | `stock_history` | Historical OHLCV (open/high/low/close/volume) price data |
 | `stock_news` | Latest news for a given stock symbol |
@@ -214,9 +217,9 @@ v0.2
 - [x] Financial statements
 - [x] Financial analysis
 - [x] Financial forecast
+- [x ] Options chain
 
 Upcoming:
-- [ ] Options chain
 - [ ] Technical indicators
 - [ ] AI stock analysis
 
