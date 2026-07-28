@@ -38,7 +38,79 @@ from services.yahoo import (
     get_stock_history,
 )
 
+from services.company_screening import screen_company
+from services.watchlist_screening import screen_watchlist
+from services.watchlist_comparison import compare_watchlist
+
+
 SYMBOL = "AAPL"
+
+
+def test_watchlist_comparison():
+
+    symbols = [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "GOOGL",
+        "AVGO",
+    ]
+
+    result = compare_watchlist(symbols)
+
+    print("\n=== Watchlist Comparison ===")
+    print(result)
+
+
+def test_watchlist_screening():
+
+    symbols = [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "GOOGL",
+        "AVGO",
+    ]
+
+    """
+    result = screen_watchlist(
+        symbols,
+        profile="default", 
+        min_score=70,
+        min_valuation_score=60,
+    )
+
+    print("\n=== Watchlist Screening ===")
+    print(result)
+    """
+
+    result = screen_watchlist(
+        symbols,
+        profile="safe",
+        min_leverage_score=80,
+    )
+
+    print("\n=== Safe Profile + Leverage >= 80 ===")
+    print(result)    
+
+
+def test_watchlist_value_profile():
+
+    symbols = [
+        "AAPL",
+        "MSFT",
+        "NVDA",
+        "GOOGL",
+        "AVGO",
+    ]
+
+    result = screen_watchlist(
+        symbols,
+        profile="value",
+    )
+
+    print("\n=== Value Profile Screening ===")
+    print(result)
 
 
 def test_company_info():
@@ -143,11 +215,21 @@ def test_stock():
 
 def test_options():
 
-    print("\n=== options ===")
+    print("\n=== Options ===")
     expirations = get_option_expirations(SYMBOL)
     print(expirations)
     print(get_option_chain(SYMBOL, expirations["expiration_dates"][0])) 
     print(get_option_summary(SYMBOL, expirations["expiration_dates"][0]))   
+
+
+def test_screening():
+
+    print("\n=== Screening ===")
+    print(test_watchlist_screening())
+    print(test_watchlist_comparison())
+    print(test_watchlist_value_profile())
+ 
+
 
 if __name__ == "__main__":
 
@@ -161,4 +243,5 @@ if __name__ == "__main__":
     test_company_report()
     test_stock()
     test_stock_news()
-    test_options()
+    test_options()    
+    test_screening()    
