@@ -4,9 +4,7 @@ MCP tools for comparing company stocks from a watchlist.
 
 from mcp_instance import mcp
 
-from services.watchlist_comparison import (
-    compare_watchlist as compare_watchlist_service,
-)
+from services.watchlist_comparison import get_compare_watchlist
 
 
 @mcp.tool(
@@ -28,4 +26,4 @@ from services.watchlist_comparison import (
     """
 )
 def compare_watchlist(symbols: list[str]):
-    return compare_watchlist_service(symbols)
+    return get_compare_watchlist(symbols)

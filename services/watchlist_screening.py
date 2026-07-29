@@ -1,7 +1,7 @@
-from .company_screening import screen_company
+from .company_screening import get_screen_company
 from .screening_utils import analyze_screening_result
 
-def screen_watchlist(
+def get_screen_watchlist(
     symbols: list[str],
     profile: str = "default",
     min_score: int | None = None,
@@ -13,7 +13,7 @@ def screen_watchlist(
 
     for symbol in symbols:
 
-        result = screen_company(symbol, profile=profile,)
+        result = get_screen_company(symbol, profile=profile,)
 
         if result["success"]:
             results.append(result)

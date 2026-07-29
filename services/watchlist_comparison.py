@@ -1,6 +1,6 @@
 from typing import Any
 
-from .company_screening import screen_company
+from .company_screening import get_screen_company
 
 
 def build_best_in_class_summary(
@@ -77,7 +77,7 @@ def get_best_in_class(
 
     return best    
 
-def compare_watchlist(
+def get_compare_watchlist(
     symbols: list[str],
 ) -> dict[str, Any]:
 
@@ -85,7 +85,7 @@ def compare_watchlist(
 
     for symbol in symbols:
 
-        result = screen_company(symbol)
+        result = get_screen_company(symbol)
 
         if not result["success"]:
             continue

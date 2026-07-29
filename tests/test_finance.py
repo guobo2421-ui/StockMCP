@@ -38,9 +38,9 @@ from services.yahoo import (
     get_stock_history,
 )
 
-from services.company_screening import screen_company
-from services.watchlist_screening import screen_watchlist
-from services.watchlist_comparison import compare_watchlist
+from services.company_screening import get_screen_company
+from services.watchlist_screening import get_screen_watchlist
+from services.watchlist_comparison import get_compare_watchlist
 
 
 SYMBOL = "AAPL"
@@ -56,7 +56,7 @@ def test_watchlist_comparison():
         "AVGO",
     ]
 
-    result = compare_watchlist(symbols)
+    result = get_compare_watchlist(symbols)
 
     print("\n=== Watchlist Comparison ===")
     print(result)
@@ -73,7 +73,7 @@ def test_watchlist_screening():
     ]
 
     """
-    result = screen_watchlist(
+    result = get_screen_watchlist(
         symbols,
         profile="default", 
         min_score=70,
@@ -84,7 +84,7 @@ def test_watchlist_screening():
     print(result)
     """
 
-    result = screen_watchlist(
+    result = get_screen_watchlist(
         symbols,
         profile="safe",
         min_leverage_score=80,
@@ -104,7 +104,7 @@ def test_watchlist_value_profile():
         "AVGO",
     ]
 
-    result = screen_watchlist(
+    result = get_screen_watchlist(
         symbols,
         profile="value",
     )
@@ -243,5 +243,5 @@ if __name__ == "__main__":
     test_company_report()
     test_stock()
     test_stock_news()
-    test_options()    
+    test_options()   
     test_screening()    

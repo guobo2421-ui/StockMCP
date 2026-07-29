@@ -80,19 +80,19 @@ StockMCP separates business logic (services/) from MCP tool interfaces (tools/),
 | `cash_flow` | Company cash flow statement data |
 | `company_info` | Returns general company information |
 | `company_report` | Comprehensive company report |
-| `compare_watchlist_service` | Compare multiple companies from a watchlist using financial metrics. |
+| `compare_watchlist` | Compare multiple companies from a watchlist using financial metrics. |
 | `financial_health_analysis` | Overall financial health analysis |
 | `financial_ratios` | Key financial ratios |
-| `get_forecast` | Get a forecast for a stock |
+| `get_forecast` | forecast for a stock |
 | `income_statement` | Company income statement data |
 | `leverage_analysis` | Debt/leverage analysis |
 | `liquidity_analysis` | Liquidity analysis |
 | `market_status` | Current market status |
-| `get_option_expirations` | Option expirations |
-| `get_option_chain` | Option chain |
-| `get_option_summary` | Option summary |
+| `option_expirations` | Option expirations |
+| `option_chain` | Option chain |
+| `option_summary` | Option summary |
 | `profitability_analysis` | Profitability analysis |
-| `screen_watchlist_service` | Screen and rank a watchlist of stocks using financial quality scores |
+| `screen_watchlist` | Screen and rank a watchlist of stocks using financial quality scores |
 | `stock_history` | Historical OHLCV (open/high/low/close/volume) price data |
 | `stock_news` | Latest news for a given stock symbol |
 | `stock_price` | Closing stock price for a given symbol |

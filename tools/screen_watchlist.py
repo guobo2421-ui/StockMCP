@@ -4,9 +4,7 @@ MCP tools for screening and ranking company stocks from a watchlist.
 
 from mcp_instance import mcp
 
-from services.watchlist_screening import (
-    screen_watchlist as screen_watchlist_service,
-)
+from services.watchlist_screening import get_screen_watchlist
 
 
 @mcp.tool(
@@ -31,7 +29,7 @@ def screen_watchlist(
     symbols: list[str],
     profile: str = "default",
 ):
-    return screen_watchlist_service(
+    return get_screen_watchlist(
         symbols,
         profile=profile,
     )

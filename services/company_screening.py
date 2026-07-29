@@ -23,7 +23,7 @@ from .financial_scoring import (
 from .screening_utils import analyze_screening_result
 
 
-def screen_company(
+def get_screen_company(
     symbol: str,
     profile: str = "default",
 ) -> dict:
