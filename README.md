@@ -1,15 +1,148 @@
 # StockMCP
+> AI-Powered Stock Market Analysis MCP Server
 
+
+## Badges
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![MCP](https://img.shields.io/badge/MCP-server-green)
+![GitHub release](https://img.shields.io/github/v/release/byronguo/StockMCP)
+![GitHub stars](https://img.shields.io/github/stars/byronguo/StockMCP)
 
-StockMCP is an MCP (Model Context Protocol) server that allows AI assistants such as Claude Desktop and Cursor to retrieve real-time US stock market information through structured tools.
 
-StockMCP provides stock prices, historical data, company information, market data, and financial news through MCP tools that can be used by Claude Desktop, Cursor, and other MCP-compatible AI clients.
+## Introduction
+StockMCP is an open-source **Model Context Protocol (MCP)** server that enables AI assistants such as Claude Desktop and Cursor to access real-time U.S. stock market data through a rich set of financial analysis tools.
 
-## Architecture
+StockMCP combines market data, SEC filings, company fundamentals, valuation metrics, analyst forecasts, options data, financial health analysis, and watchlist screening into one unified MCP server.
+
+It is designed for AI-powered investment research using Claude Desktop, Cursor, and other MCP-compatible AI clients.
+
+
+## Highlights
+- Real-time U.S. stock market data
+- SEC financial statements (up to 8 quarters)
+- Comprehensive company reports
+- Financial ratio and TTM analysis
+- Profitability, liquidity, leverage, valuation and financial health scoring
+- Automated company comparison and ranking
+- Watchlist screening and ranking
+- Analyst forecasts
+- Options chain and implied volatility
+- AI-ready tools for Claude Desktop, Cursor and other MCP clients
+
+
+## Features
+
+### Market Data
+- Real-time stock prices
+- Historical price data
+- Company information
+
+### Financial Analysis
+- SEC quarterly financial statements
+- TTM income statement, balance sheet and cash flow
+- Financial ratios
+- Financial health scoring
+
+### Investment Research
+- Company reports
+- Stock comparison
+- Watchlist screening
+- Analyst forecasts
+
+### Options Analysis
+- Option expiration dates
+- Calls and puts
+- Implied volatility
+- Open interest analysis
+
+
+## Supported AI Clients
+
+| Client         | Supported |
+|----------------|-----------|
+| Claude Desktop | ✅        |
+| Cursor         | ✅        |
+| VS Code + MCP  | Planned   |
+| Windsurf       | Planned   |
+
+
+## Quick Start
+
+### Install
+
+```bash
+git clone https://github.com/byronguo/StockMCP.git
+cd StockMCP
+
+python -m venv .venv
+
+# Windows
+.venv\Scripts\activate
+
+# macOS / Linux
+source .venv/bin/activate
+
+pip install -r requirements.txt
+
+python server.py
 ```
+
+
+## Example AI Queries
+
+**Analyze Costco's financial health.**
+
+![Financial Health Analysis](images/Analysis.png)
+
+**Compare Apple, Microsoft, Nvidia, Google and Broadcom.**
+
+![Company Comparison](images/Compare.png)
+
+**Generate a complete company report for Costco.**
+
+![Company Report](images/Report.png)
+
+**Find the healthiest company in my watchlist.**
+
+![Screening Companies](images/ScreenBestValue.png)
+
+**Rank these companies by financial quality.**
+
+![Rank Companies](images/Rank.png)
+
+**Show Tesla's nearest option expiration.**
+
+![Option Expiration Analysis](images/Option.png)
+
+**Summarize Nvidia's latest news.**
+
+![Summarize Company News](images/News.png)
+
+**Evaluate Microsoft's financial health.**
+
+![Evaluate Company Financial Health](images/Evaluation.png)
+
+**Which company has the strongest balance sheet?**
+
+![Find Strongest Balance Sheet](images/BalanceSheet.png)
+
+**Forecast Amazon's revenue and earnings.**
+
+![Revenue and Earnings Forecast](images/Forecast.png)
+
+
+## Documentation
+
+- 📦 [Installation Guide](docs/INSTALL.md)
+- 🛠️ [Available Tools](docs/TOOLS.md)
+- 👨‍💻 [Development Guide](docs/DEVELOPMENT.md)
+- 📊 [Financial Analysis Guide](docs/FINANCIAL_ANALYSIS.md)
+
+
+
+## Architecture Diagram
+```text
                          ┌─────────────────────┐
                          │   AI Clients        │
                          │ Claude / Cursor     │
@@ -28,321 +161,103 @@ StockMCP provides stock prices, historical data, company information, market dat
               │              tools/                    │
               │          MCP Tool Layer                │
               │                                        │
-              │  stock.py       company.py             │
-              │  financials.py  forecast.py            │
-              │  market.py       news.py                │
+              │  stock.py        company.py            │
+              │  financials.py   forecast.py           │
+              │  market.py       news.py               │
+              │  options.py      screening.py          │
+              │  watchlist.py                          │                           
               │                                        │
               │  @mcp.tool()                           │
               └──────────────────┬─────────────────────┘
                                  │
                                  ▼
-              ┌────────────────────────────────────────┐
-              │             services/                  │
-              │          Business Logic Layer           │
-              │                                        │
-              │  yahoo.py          market_data.py      │
-              │  financial_data.py  financial_ttm.py   │
+              ┌──────────────────────────────────────────┐
+              │             services/                    │
+              │          Business Logic Layer            │
+              │                                          │
+              │  yahoo.py           market_data.py       │
+              │  financial_data.py  financial_ttm.py     │
               │  forecast_data.py   sec_financial_data.py│
-              │                                        │
-              │  Data retrieval                        │
-              │  Calculations                          │
-              │  Financial analysis                     │
-              └──────────────────┬─────────────────────┘
+              │                                          │
+              │  Data retrieval                          │
+              │  Calculations                            │
+              │  Financial analysis                      │
+              └──────────────────┬───────────────────────┘
                                  │
                     ┌────────────┼────────────┐
                     ▼            ▼            ▼
              ┌──────────┐ ┌──────────┐ ┌──────────┐
              │ Yahoo    │ │ SEC      │ │ Other    │
-             │ Finance  │ │ Company  │ │ Data     │
-             │          │ │ Facts    │ │ Sources  │
+             │ Finance  │ │ Company  │ │ API      │
+             │          │ │ Facts    │ │          │
              └──────────┘ └──────────┘ └──────────┘
-
-StockMCP separates business logic (services/) from MCP tool interfaces (tools/), making the core functionality independently testable and reusable.
 ```
 
-## Features
-- Real-time stock prices
-- Historical OHLCV data
-- Company information
-- Market capitalization
-- Valuation metrics
-- Financial news
-- Market overview
-- Financial analysis
-- Stock forecast
-- Company screening
-- AI-ready MCP tools
 
-## Available Tools
-| Tool | Description |
-|------|-------------|
-| `balance_sheet` | Company balance sheet data |
-| `cash_flow` | Company cash flow statement data |
-| `company_info` | Returns general company information |
-| `company_report` | Comprehensive company report |
-| `compare_watchlist` | Compare multiple companies from a watchlist using financial metrics. |
-| `financial_health_analysis` | Overall financial health analysis |
-| `financial_ratios` | Key financial ratios |
-| `get_forecast` | forecast for a stock |
-| `income_statement` | Company income statement data |
-| `leverage_analysis` | Debt/leverage analysis |
-| `liquidity_analysis` | Liquidity analysis |
-| `market_status` | Current market status |
-| `option_expirations` | Option expirations |
-| `option_chain` | Option chain |
-| `option_summary` | Option summary |
-| `profitability_analysis` | Profitability analysis |
-| `screen_watchlist` | Screen and rank a watchlist of stocks using financial quality scores |
-| `stock_history` | Historical OHLCV (open/high/low/close/volume) price data |
-| `stock_news` | Latest news for a given stock symbol |
-| `stock_price` | Closing stock price for a given symbol |
-| `valuation_analysis` | valuation_analysis |
-| `valuation_ratios` | Valuation ratios |
+## Data Sources
 
-## Supported AI Clients
+StockMCP uses:
 
-| Client         | Supported |
-|----------------|-----------|
-| Claude Desktop | ✅        |
-| Cursor         | ✅        |
-| VS Code + MCP  | Planned   |
-| Windsurf       | Planned   |
+- Yahoo Finance for market data and price information
+- SEC CompanyFacts API for financial statements
+- Analyst estimates for forecasts
+- Options market data for derivatives analysis
 
-## Quick Start
 
-### Requirements
-- Python 3.11+
+## Configuration
 
-Dependencies:
-- MCP
-- yfinance
+Some features may require API configuration.
 
----
+See:
 
-### Clone the Repository
-```bash
-git clone https://github.com/byronguo/StockMCP.git
-cd StockMCP
-```
+- docs/INSTALL.md
+- docs/DEVELOPMENT.md
 
-### Create Virtual Environment
-```bash
-python -m venv .venv
-Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
-```
+for environment variables and setup details.
 
-Activate it:
-
-**Windows:**
-```bash
-.venv\Scripts\activate
-```
-
-**macOS/Linux:**
-```bash
-source .venv/bin/activate
-```
-
-### Install Dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### Run StockMCP Server
-```bash
-python server.py
-```
-
-### Claude Desktop Configuration
-Add below configuration in claude_desktop_config.json
-```json
-{
-  "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "C:\\MCP_Claude"
-      ]
-    },
-    "StockMCP": {
-      "command": "C:\\Python314\\python.exe",
-      "args": [
-        "C:\\MCP_Claude\\StockMCP\\server.py"
-      ]
-    }
-  }
-  ...
-}
-```
-Restart Claude Desktop.
-
-### Test
-![StockMCP Demo](images/StockMCP_Claude.png)
-
-### Cursor Configuration
-Add below configuration in mcp.json
-```json
-{
-  "mcpServers": {
-    "filesystem": {
-      "command": "npx",
-      "args": [
-        "-y",
-        "@modelcontextprotocol/server-filesystem",
-        "C:\\MCP_Claude"
-      ]
-    }    
-  },
-  "StockMCP": {
-    "command": "python",
-    "args": [
-      "C:\\MCP_Claude\\StockMCP\\server.py"
-    ]
-  }
-}
-```
 
 ## Roadmap
-v0.1
-- stock server
 
-v0.2
-- refactored architecture
-- company
-- market
-- news
+### Completed
 
-- [x] Stock price
-- [x] Historical data
-- [x] Company information
-- [x] Market data
-- [x] Stock news
-- [x] Financial statements
-- [x] Financial analysis
-- [x] Financial forecast
-- [x ] Options chain
+- ✅ Real-time market data
+- ✅ Company fundamentals
+- ✅ SEC financial statements
+- ✅ Financial ratios
+- ✅ Financial health analysis
+- ✅ Company reports
+- ✅ Watchlist screening and financial ranking
+- ✅ Analyst forecasts
+- ✅ Options analysis
 
-Upcoming:
-- [ ] Technical indicators
-- [ ] AI stock analysis
+### Planned
 
-## Adding a New Feature
+- Technical indicators
+- Portfolio analysis
+- ETF analysis
+- Dividend analysis
+- Economic indicators
+- Insider trading analysis
 
-When adding a new StockMCP feature, follow these four steps:
 
-### 1. Implement the business logic in `services/`
+## Current Version
 
-Create or update a service module, for example:
+StockMCP v1.0
 
-```text
-services/forecast_data.py
-```
+Initial stable release including:
+- Financial analysis
+- Company reports
+- Watchlist screening
+- Forecasts
+- Options analysis
 
-Implement the main business logic there:
 
-```python
-def get_company_forecast(
-    symbol: str,
-) -> dict[str, Any]:
-    ...
-```
+## License
+StockMCP is released under the MIT License.
 
-The service layer handles data retrieval, calculations, transformations, and business logic.
 
-### 2. Expose the feature as an MCP tool in `tools/`
 
-Create an MCP tool wrapper:
 
-```text
-tools/forecast.py
-```
 
-Example:
 
-```python
-@mcp.tool()
-def get_forecast(
-    symbol: str,
-) -> dict[str, Any]:
-    """Get financial forecasts and analyst expectations."""
 
-    return get_company_forecast(symbol)
-```
-
-The function decorated with `@mcp.tool()` is the function exposed to AI clients such as Claude.
-
-### 3. Import the new tool module in `server.py`
-
-Add the new tool module to the imports in `server.py`:
-
-```python
-from tools import (
-    stock,
-    company,
-    market,
-    news,
-    financials,
-    forecast,
-)
-```
-
-This step is required to register the MCP tool.
-
-> Important: If the new module is not imported by `server.py`, the `@mcp.tool()` decorator will not be executed and the tool will not be available to MCP clients.
-
-### 4. Add a test in `tests/`
-
-Add a test for the service function:
-
-```python
-def test_company_forecast():
-
-    print("\n=== Company forecast ===")
-
-    print(
-        get_company_forecast(SYMBOL)
-    )
-```
-
-Then run the test to verify the feature before testing it through an MCP client.
-
-### Development Flow
-
-```
-example:
-┌──────────────────────────┐
-│ 1. services/             │
-│                          │
-│ Implement business logic │
-│ get_company_forecast()   │
-└─────────────┬────────────┘
-              │
-              ▼
-┌──────────────────────────┐
-│ 2. tools/                │
-│                          │
-│ Expose MCP tool          │
-│ get_forecast()           │
-└─────────────┬────────────┘
-              │
-              ▼
-┌──────────────────────────┐
-│ 3. server.py             │
-│                          │
-│ Import new tool module   │
-│ Register MCP tool        │
-└─────────────┬────────────┘
-              │
-              ▼
-┌──────────────────────────┐
-│ 4. tests/                │
-│                          │
-│ Test service function    │
-│ Verify results           │
-└──────────────────────────┘
-```
-
-## Topics
-`mcp` `claude` `cursor` `stock` `finance` `ai` `python` `yfinance`
