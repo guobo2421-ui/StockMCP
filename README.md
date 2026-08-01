@@ -150,6 +150,7 @@ python server.py
 - 🛠️ [Available Tools](docs/TOOLS.md)
 - 👨‍💻 [Development Guide](docs/DEVELOPMENT.md)
 - 📊 [Financial Analysis Guide](docs/FINANCIAL_ANALYSIS.md)
+- 📝 [Changelog](CHANGELOG.md)
 
 
 
