@@ -23,12 +23,13 @@ from services.financial_ttm import (
     get_financial_trends,
 )
 
+from services.forecast_data import get_company_forecast
+
 from services.options_data import (
     get_option_expirations,
     get_option_chain,
     get_option_summary,
 )
-
 
 from services.market_data import get_market_status
 from services.company_report import get_company_report
@@ -172,16 +173,9 @@ def test_financial_ttm():
     print(get_financial_trends(SYMBOL))
 
 
-def test_forecast_data():
-
-    print("\n=== Analyst forecast data ===")
-    print(get_analyst_forecast(SYMBOL))
-
-
 def test_forecast():
 
     print("\n=== Forecast ===")
-    print(get_forecast(SYMBOL))
     print(get_company_forecast(SYMBOL))
 
 
@@ -205,12 +199,10 @@ def test_stock():
     print(get_stock_history(SYMBOL, "1y"))
 
 
-def test_stock():
+def test_stock_news():
 
-    print("\n=== Stock ===")
-    print(get_stock_price(SYMBOL))
-
-    print(get_stock_history(SYMBOL, "1y"))
+    print("\n=== Stock news ===")
+    print(get_stock_news(SYMBOL))
 
 
 def test_options():
@@ -238,7 +230,7 @@ if __name__ == "__main__":
     test_ratios()
     test_analysis()
     test_financial_ttm() 
-    test_forecast_data()    
+    test_forecast()    
     test_market_status() 
     test_company_report()
     test_stock()
