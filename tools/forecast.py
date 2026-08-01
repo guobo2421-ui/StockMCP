@@ -12,7 +12,7 @@ from services.forecast_data import (
 
 
 @mcp.tool()
-def get_forecast(
+def company_forecast(
     symbol: str,
 ) -> dict[str, Any]:
     """
