@@ -6,8 +6,8 @@
 ![License](https://img.shields.io/badge/license-MIT-blue.svg)
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![MCP](https://img.shields.io/badge/MCP-server-green)
-![GitHub release](https://img.shields.io/github/v/release/byronguo/StockMCP)
-![GitHub stars](https://img.shields.io/github/stars/byronguo/StockMCP)
+![GitHub release](https://img.shields.io/github/v/release/guobo2421-ui/StockMCP)
+![GitHub stars](https://img.shields.io/github/stars/guobo2421-ui/StockMCP)
 
 
 ## Introduction
@@ -16,6 +16,18 @@ StockMCP is an open-source **Model Context Protocol (MCP)** server that enables 
 StockMCP combines market data, SEC filings, company fundamentals, valuation metrics, analyst forecasts, options data, financial health analysis, and watchlist screening into one unified MCP server.
 
 It is designed for AI-powered investment research using Claude Desktop, Cursor, and other MCP-compatible AI clients.
+
+
+## Current Version
+
+StockMCP v1.0
+
+Initial stable release including:
+- Financial analysis
+- Company reports
+- Watchlist screening
+- Forecasts
+- Options analysis
 
 
 ## Highlights
@@ -42,7 +54,7 @@ It is designed for AI-powered investment research using Claude Desktop, Cursor, 
 - SEC quarterly financial statements
 - TTM income statement, balance sheet and cash flow
 - Financial ratios
-- Financial health scoring
+- Financial health scoring and analysis
 
 ### Investment Research
 - Company reports
@@ -72,7 +84,7 @@ It is designed for AI-powered investment research using Claude Desktop, Cursor, 
 ### Install
 
 ```bash
-git clone https://github.com/byronguo/StockMCP.git
+git clone https://github.com/guobo2421-ui/StockMCP.git
 cd StockMCP
 
 python -m venv .venv
@@ -206,7 +218,7 @@ StockMCP uses:
 
 ## Configuration
 
-Some features may require API configuration.
+Some advanced features may require API configuration depending on the selected data providers.
 
 See:
 
@@ -214,6 +226,17 @@ See:
 - docs/DEVELOPMENT.md
 
 for environment variables and setup details.
+
+
+
+## Development
+
+See the Development Guide for:
+
+- Project structure
+- Adding new MCP tools
+- Extending financial analysis modules
+- Running tests
 
 
 ## Roadmap
@@ -238,18 +261,6 @@ for environment variables and setup details.
 - Dividend analysis
 - Economic indicators
 - Insider trading analysis
-
-
-## Current Version
-
-StockMCP v1.0
-
-Initial stable release including:
-- Financial analysis
-- Company reports
-- Watchlist screening
-- Forecasts
-- Options analysis
 
 
 ## License

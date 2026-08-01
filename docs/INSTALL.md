@@ -18,7 +18,7 @@ Key Python dependencies:
 
 ## Clone the Repository
 ```bash
-git clone https://github.com/byronguo/StockMCP.git
+git clone https://github.com/guobo2421-ui/StockMCP.git
 cd StockMCP
 ```
 

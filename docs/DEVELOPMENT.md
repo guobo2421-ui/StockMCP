@@ -186,7 +186,7 @@ This development workflow makes it easier to isolate issues in the service layer
               │
               ▼
 ┌──────────────────────────┐
-│ 4. tests/ │
+│ 4. tests/                │
 │                          │
 │ Test service function    │
 │ Verify results           │
